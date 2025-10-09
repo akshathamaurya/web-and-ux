@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Grid Layout</title>
+<style>
+.grid-container {
+display: grid;
+grid-template-columns: 1fr 1fr 1fr;
+
+gap: 10px;
+}
+.grid-container div {
+background-color: rgb(176, 3, 78);
+padding: 40px;
+text-align: center;
+border: 20px solid #29c540;
+}
+</style>
+
+</head>
+<body>
+<h2>Grid Layout Example</h2>
+<div class="grid-container">
+<div>Grid 1</div>
+<div>Grid 2</div>
+<div>Grid 3</div>
+</div>
+</body>
+</html>

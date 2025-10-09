@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Responsive Design Example</title>
+<style>
+/* Media Query for Tablets and Phones */
+@media (max-width: 50px) {
+
+body {
+font-size: 16px;
+background-color: #f9f9f9;
+}
+img {
+max-width: 100%;
+height: auto;
+border: 2px solid #ccc;
+}
+}
+
+/* Responsive Flexbox Example */
+.responsive {
+display: flex;
+flex-wrap: wrap;
+justify-content: space-around;
+margin: 20px;
+}
+.responsive div {
+flex: 1 1 300px;
+margin: 10px;
+background-color: #d9eaf7;
+text-align: center;
+padding: 20px;
+border-radius: 50px;
+font-family: bold, sans-serif;
+}
+
+h2 {
+text-align: center;
+}
+</style>
+</head>
+
+<body>
+
+<h2>Responsive Flexbox and Media Query Demo</h2>
+
+<div class="responsive">
+<div>Box 1: Resizes on smaller screens</div>
+<div>Box 2: Resizes on smaller screens</div>
+<div>Box 3: Resizes on smaller screens</div>
+</div>
+
+<p>Resize the browser window or open this page on a phone or tablet to
+see the changes in layout and font size.</p>
+
+<img src="https://via.placeholder.com/600x200" alt="Placeholder Image">
+
+</body>
+</html>
