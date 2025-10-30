@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Personal Webpage</title>
+
+  <style>
+    
+    :root {
+      --bg-color: #f0f8ff;
+      --text-color: #222;
+      --accent-color: #0078d7;
+    }
+
+    
+    body {
+      font-family: Arial, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      text-align: center;
+      
+    }
+
+    header {
+      background-color: var(--accent-color);
+      color: white;
+      padding: 20px;
+      border-radius: 20px;
+    }
+
+    
+    .about, .skills {
+      margin: 20px;
+      padding: 20px;
+    }
+
+    
+    #greeting {
+      font-style: italic;
+    }
+
+    button {
+      background-color: var(--accent-color);
+      color: white;
+      border: none;
+      border-radius: 20px;
+      padding: 20px 20px;
+      margin: 20px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    
+    button:hover {
+      background-color: #005fa3;
+    }
+
+    footer {
+      background-color: #ddd;
+      padding: 20px;
+      border-top: 20px solid #ccc;
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <h1>Welcome to My Personal Webpage</h1>
+    <p id="greeting">Hello! I’m Akshatha 👋</p>
+  </header>
+
+  <section class="about">
+    <h2>About Me</h2>
+    <p>I’m a passionate learner interested in web development, coding, and creative projects.</p>
+  </section>
+
+  <section class="skills">
+    <h2>My Skills</h2>
+    <ul>
+      <li>HTML & CSS</li>
+      <li>JavaScript</li>
+      <li>Python</li>
+      <li>Problem Solving</li>
+    </ul>
+  </section>
+
+  <button onclick="changeTheme()">Change Theme</button>
+  <button onclick="showMessage()">Say Hi</button>
+
+  <footer>
+    <p>© 2025 Akshatha | Built with ❤️ and code</p>
+  </footer>
+
+  <script>
+    
+    function changeTheme() {
+      const root = document.documentElement;
+      const currentBg = getComputedStyle(root).getPropertyValue('--bg-color').trim();
+
+      if (currentBg === '#f0f8ff') {
+        root.style.setProperty('--bg-color', '#1e1e1e');
+        root.style.setProperty('--text-color', '#ffffff');
+        root.style.setProperty('--accent-color', '#ff4081');
+      } else {
+        root.style.setProperty('--bg-color', '#f0f8ff');
+        root.style.setProperty('--text-color', '#222');
+        root.style.setProperty('--accent-color', '#0078d7');
+      }
+    }
+
+    
+    function showMessage() {
+      alert("Thanks for visiting my page! 😊");
+    }
+  </script>
+</body>
+</html>
