@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CSS Selector Examples</title>
+  <style>
+
+    /* Element Selector: styles all <p> elements */
+    p {
+      color: blue;
+      font-family: Arial, sans-serif;
+    }
+
+    /* Class Selector: styles elements with class="note" */
+    .note {
+      font-size: 14px;
+      background-color: #f0f8ff;
+      padding: 5px;
+    }
+
+    /* ID Selector: styles the element with id="header" */
+    #header {
+      background-color: lightgray;
+      text-align: center;
+      padding: 10px;
+      font-weight: bold;
+    }
+
+    /* Attribute Selector: styles <a> tags with target="_blank" */
+    a[target='_blank'] {
+      color: red;
+      text-decoration: underline;
+    }
+  </style>
+
+</head>
+<body>
+
+  <div id="header">
+    Welcome to My Website
+  </div>
+
+  <p>This is a regular paragraph styled using an <strong>element selector</strong>.</p>
+
+  <p class="note">This paragraph uses a <strong>class selector</strong> for extra styling.</p>
+
+  <a href="https://example.com" target="_blank">Visit Example (opens in new tab)</a><br>
+  <a href="https://example.com">Visit Example (same tab)</a>
+
+</body>
+</html>
