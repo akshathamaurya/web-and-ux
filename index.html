@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Underrated Artists Spotlight — Enhanced Version</title>
+
+<style>
+  :root{
+    --bg:#f5f7ff; --card:#fff; --text:#111; --accent:#4b79ff; --muted:#6b6f76;
+  }
+  .dark{ --bg:#0f1115; --card:#121417; --text:#e6eef8; --accent:#6c8fff; --muted:#9aa3b2; }
+  *{box-sizing:border-box}
+  body{
+    margin:0; font-family:Inter,ui-sans-serif,system-ui,Segoe UI,Roboto,"Helvetica Neue",Arial;
+    background:var(--bg); color:var(--text);
+  }
+  header{
+    display:flex; gap:12px; align-items:center; justify-content:space-between;
+    padding:18px 20px; max-width:1100px; margin:0 auto;
+  }
+  h1{margin:0;font-size:20px;color:var(--accent)}
+  .controls{display:flex; gap:10px; align-items:center}
+  .btn{
+    background:var(--accent); color:white; border:none; padding:10px 12px; border-radius:8px; cursor:pointer;
+  }
+  .ghost{background:transparent;border:1px solid rgba(0,0,0,0.08); padding:8px 10px; border-radius:8px}
+  .search{
+    display:flex; gap:8px; align-items:center; padding:10px; background:var(--card); border-radius:10px;
+  }
+  input[type="search"], input, select, textarea{
+    border:0; outline:none; background:transparent; color:var(--text); font:inherit;
+  }
+  input[type="search"]{ width:220px; }
+  .main{max-width:1100px;margin:18px auto;padding:0 18px}
+  .toolbar{display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:14px}
+  .grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:18px}
+  .card{background:var(--card); border-radius:12px; padding:12px; box-shadow:0 6px 18px rgba(16,24,40,0.06);}
+  .cover{width:100%;height:150px;border-radius:8px;object-fit:cover;background:#ddd}
+  .row{display:flex;align-items:center;justify-content:space-between}
+  .name{font-weight:700}
+  .meta{font-size:13px;color:var(--muted)}
+  .info{font-size:13px;margin-top:3px;}
+
+  /* Video Modal Popup */
+  #videoModal{
+    position:fixed;top:0;left:0;
+    width:100%;height:100%;
+    background:rgba(0,0,0,0.7);
+    display:none;align-items:center;justify-content:center;
+    z-index:9999;
+  }
+  #videoModal iframe{
+    width:80vw;height:60vh;border:0;border-radius:10px;
+  }
+  #closeVideo{
+    margin-top:10px;background:#ff3b63;color:white;padding:8px 14px;border:none;border-radius:6px;cursor:pointer;
+  }
+</style>
+</head>
+
+<body>
+
+<header>
+  <div style="display:flex;align-items:center;gap:14px">
+    <h1>Underrated Artists Spotlight</h1>
+  </div>
+
+  <div class="controls">
+    <div class="search">
+      <input id="q" type="search" placeholder="Search artists..." />
+      <button id="voiceSearchBtn" class="ghost">🎙</button>
+    </div>
+    <select id="instrumentFilter" class="ghost">
+      <option value="">All Instruments</option>
+      <option>Guitar</option><option>Piano</option><option>Drums</option>
+      <option>Vocals</option><option>Violin</option><option>Flute</option>
+    </select>
+    <input id="addressFilter" class="ghost" style="padding:8px;" placeholder="Filter by location">
+    <button id="toggleTheme" class="ghost">🌙</button>
+    <button id="sortBtn" class="btn">🔥 Trending</button>
+    <button id="addOpen" class="btn">➕ Add Artist</button>
+  </div>
+</header>
+
+
+<main class="main">
+  <div id="addForm" style="display:none;padding:12px;background:var(--card);border-radius:10px;margin-bottom:10px;">
+    <h3>Add New Artist</h3>
+    <input id="newName" placeholder="Name">
+    <input id="newImg" placeholder="Image URL">
+    <input id="newAudio" placeholder="Audio preview URL (.mp3)">
+    <input id="newVideo" placeholder="YouTube Video URL">
+    <input id="newInstrument" placeholder="Instrument">
+    <input id="newAddress" placeholder="Address">
+    <input id="newEmail" placeholder="Gmail (collab)">
+    <input id="newBio" placeholder="Short bio">
+    <input id="newGenre" placeholder="Genre">
+    <div style="margin-top:10px;display:flex;gap:10px;">
+      <button id="addSave" class="btn">Save</button>
+      <button id="addCancel" class="ghost">Cancel</button>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    Showing <span id="countShown">0</span> artists
+    <select id="sortMode" class="ghost">
+      <option value="default">Default</option>
+      <option value="votes">Most Votes</option>
+      <option value="name">A → Z</option>
+    </select>
+  </div>
+
+  <div id="grid" class="grid"></div>
+</main>
+
+<!-- VIDEO POPUP -->
+<div id="videoModal">
+  <div style="text-align:center;">
+    <iframe id="videoFrame" src="" allowfullscreen></iframe><br>
+    <button id="closeVideo">Close</button>
+  </div>
+</div>
+
+
+<script>
+const seedImg = name => "https://picsum.photos/seed/" + encodeURIComponent(name) + "/600/400";
+
+let initialArtists = [
+  { name:"Rosa Linn", img:seedImg("Rosa"), instrument:"Piano", address:"Armenia",
+    email:"rosalinn@gmail.com", bio:"Indie pop singer", genre:"Indie",
+    video:"https://www.youtube.com/embed/TD5ktg0XktY"
+  }
+];
+
+let artists = JSON.parse(localStorage.getItem("artists_v9")) || initialArtists;
+let votes = JSON.parse(localStorage.getItem("votes_v9")) || {};
+let comments = JSON.parse(localStorage.getItem("comments_v9")) || {};
+
+function saveAll(){
+  localStorage.setItem("artists_v9", JSON.stringify(artists));
+  localStorage.setItem("votes_v9", JSON.stringify(votes));
+  localStorage.setItem("comments_v9", JSON.stringify(comments));
+}
+
+const grid = document.getElementById("grid");
+const q = document.getElementById("q");
+const instrumentFilter = document.getElementById("instrumentFilter");
+const addressFilter = document.getElementById("addressFilter");
+const sortMode = document.getElementById("sortMode");
+const countShown = document.getElementById("countShown");
+
+function convertYouTube(url){
+  if(!url) return "";
+  return url.replace("watch?v=", "embed/");
+}
+
+function render(){
+  let list=[...artists];
+  const s=q.value.toLowerCase();
+  if(s){ list=list.filter(a=>a.name.toLowerCase().includes(s)); }
+  if(instrumentFilter.value){
+    list=list.filter(a=>a.instrument.toLowerCase()===instrumentFilter.value.toLowerCase());
+  }
+  const loc=addressFilter.value.toLowerCase();
+  if(loc){ list=list.filter(a=>a.address.toLowerCase().includes(loc));}
+  if(sortMode.value==="votes"){
+    list.sort((a,b)=>(votes[b.name]||0)-(votes[a.name]||0));
+  }
+  if(sortMode.value==="name"){ list.sort((a,b)=>a.name.localeCompare(b.name)); }
+
+  countShown.textContent=list.length;
+  grid.innerHTML="";
+
+  list.forEach(a=>{
+    votes[a.name]??=0;
+    comments[a.name]??=[];
+
+    grid.innerHTML+=`
+      <div class="card">
+        <img class="cover" src="${a.img}">
+        <div class="name">${a.name}</div>
+        <div class="info"><b>Genre:</b> ${a.genre}</div>
+        <div class="info"><b>Instrument:</b> ${a.instrument}</div>
+        <div class="info"><b>Location:</b> ${a.address}</div>
+        <div class="info"><b>Bio:</b> ${a.bio}</div>
+        <div class="info"><b>Email:</b> <a href="mailto:${a.email}">${a.email}</a></div>
+        
+        ${a.video ? `<button class="btn" onclick="openVideo('${a.name}')">▶ Watch Video</button>` : ''}
+
+        <div class="voteWrap">
+          <button class="ghost" onclick="upvote('${a.name}')">▲</button>
+          <div><b>${votes[a.name]}</b></div>
+          <button class="ghost" onclick="downvote('${a.name}')">▼</button>
+        </div>
+      </div>
+    `;
+  });
+
+  saveAll();
+}
+
+function openVideo(name){
+  const a=artists.find(x=>x.name===name);
+  document.getElementById("videoFrame").src=a.video;
+  document.getElementById("videoModal").style.display="flex";
+}
+document.getElementById("closeVideo").onclick=function(){
+  document.getElementById("videoModal").style.display="none";
+  document.getElementById("videoFrame").src="";
+}
+
+function upvote(name){ votes[name]=(votes[name]||0)+1; render(); }
+function downvote(name){ votes[name]=Math.max((votes[name]||0)-1,0); render(); }
+
+q.oninput=render;
+instrumentFilter.onchange=render;
+addressFilter.oninput=render;
+sortMode.onchange=render;
+
+document.getElementById("toggleTheme").onclick=()=>document.body.classList.toggle("dark");
+document.getElementById("addOpen").onclick=()=>addForm.style.display="block";
+document.getElementById("addCancel").onclick=()=>addForm.style.display="none";
+document.getElementById("addSave").onclick=()=>{
+  let obj={
+    name:newName.value,img:newImg.value||seedImg(newName.value),
+    audio:newAudio.value,
+    video:convertYouTube(newVideo.value),
+    instrument:newInstrument.value,address:newAddress.value,
+    email:newEmail.value,bio:newBio.value,genre:newGenre.value
+  };
+  artists.push(obj);saveAll();addForm.style.display="none";render();
+};
+
+document.getElementById("voiceSearchBtn").onclick=()=>{
+  const R=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!R){alert("Not supported");return;}
+  const r=new R(); r.start();
+  r.onresult=e=>{q.value=e.results[0][0].transcript; render();};
+};
+
+render();
+</script>
+
+</body>
+</html>
