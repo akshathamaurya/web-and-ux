@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Underrated Artists Spotlight — Enhanced Version</title>
+
+<style>
+  :root{
+    --bg:#f5f7ff; --card:#fff; --text:#111; --accent:#00030a; --muted:#6b6f76;
+  }
+  .dark{ --bg:#060b16; --card:#121417; --text:#e6eef8; --accent:#8b8e98; --muted:#9aa3b2; }
+  *{box-sizing:border-box}
+  body{
+    margin:0; font-family:Inter,ui-sans-serif,system-ui,Segoe UI,Roboto,"Helvetica Neue",Arial;
+    background:var(--bg); color:var(--text);
+  }
+  header{
+    display:flex; gap:12px; align-items:center; justify-content:space-between;
+    padding:18px 20px; max-width:1100px; margin:0 auto;
+  }
+  h1{margin:0;font-size:20px;color:var(--accent)}
+  .controls{display:flex; gap:10px; align-items:center}
+  .btn{
+    background:var(--accent); color:white; border:none; padding:10px 12px; border-radius:8px; cursor:pointer;
+  }
+  .ghost{background:transparent;border:1px solid rgba(0,0,0,0.08); padding:8px 10px; border-radius:8px}
+  .search{
+    display:flex; gap:8px; align-items:center; padding:10px; background:var(--card); border-radius:10px;
+  }
+  input[type="search"], input, select, textarea{
+    border:0; outline:none; background:transparent; color:var(--text); font:inherit;
+  }
+  input[type="search"]{ width:220px; }
+  .main{max-width:1100px;margin:18px auto;padding:0 18px}
+  .toolbar{display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:14px}
+  .grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:18px}
+  .card{background:var(--card); border-radius:12px; padding:12px; box-shadow:0 6px 18px rgba(16,24,40,0.06);}
+  .cover{width:100%;height:150px;border-radius:8px;object-fit:cover;background:#ddd}
+  .row{display:flex;align-items:center;justify-content:space-between}
+  .name{font-weight:700}
+  .meta{font-size:13px;color:var(--muted)}
+  .info{font-size:13px;margin-top:3px;}
+  .voteWrap{display:flex; gap:8px; align-items:center}
+  textarea{
+    width:100%;resize:vertical;padding:8px;
+    border-radius:8px;border:1px solid rgba(0,0,0,0.06);
+  }
+  .commentsList{font-size:13px;color:var(--muted); max-height:90px; overflow:auto; padding:6px;}
+</style>
+</head>
+
+<body>
+
+<header>
+  <div style="display:flex;align-items:center;gap:14px">
+    <h1>Underrated Artists Spotlight</h1>
+  </div>
+
+  <div class="controls">
+
+    <!-- Search Box -->
+    <div class="search">
+      <input id="q" type="search" placeholder="Search artists..." />
+      <button id="voiceSearchBtn" class="ghost">🎙</button>
+    </div>
+
+    <!-- NEW: Filter instrument -->
+    <select id="instrumentFilter" class="ghost">
+      <option value="">All Instruments</option>
+      <option>Guitar</option>
+      <option>Piano</option>
+      <option>Drums</option>
+      <option>Vocals</option>
+      <option>Violin</option>
+      <option>Flute</option>
+    </select>
+
+    <!-- NEW: Filter by address -->
+    <input id="addressFilter" class="ghost" style="padding:8px;" placeholder="Filter by location">
+
+    <!-- Theme + Trending + Add -->
+    <button id="toggleTheme" class="ghost">🌙</button>
+    <button id="sortBtn" class="btn">🔥 Trending</button>
+    <button id="addOpen" class="btn">➕ Add Artist</button>
+
+  </div>
+</header>
+
+
+<main class="main">
+
+  <!-- Add Artist Modal -->
+  <div id="addForm" style="display:none;padding:12px;background:var(--card);border-radius:10px;margin-bottom:10px;">
+    <h3>Add New Artist</h3>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+
+      <input id="newName" placeholder="Name">
+      <input id="newImg" placeholder="Image URL">
+      <input id="newAudio" placeholder="Audio preview URL (.mp3)">
+      <input id="newInstrument" placeholder="Instrument">
+      <input id="newAddress" placeholder="Address">
+      <input id="newEmail" placeholder="Gmail (collab)">
+      <input id="newBio" placeholder="Short bio">
+      <input id="newGenre" placeholder="Genre">
+
+      <div style="width:100%; display:flex; gap:10px; margin-top:10px;">
+        <button id="addSave" class="btn">Save</button>
+        <button id="addCancel" class="ghost">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sorting Toolbar -->
+  <div class="toolbar">
+    Showing <span id="countShown">0</span> artists
+    <select id="sortMode" class="ghost">
+      <option value="default">Default</option>
+      <option value="votes">Most Votes</option>
+      <option value="name">A → Z</option>
+    </select>
+  </div>
+
+  <!-- MAIN GRID -->
+  <div id="grid" class="grid"></div>
+
+</main>
+
+
+<script>
+/* ============================
+   INITIAL SEED ARTISTS
+============================ */
+const seedImg = name => "https://picsum.photos/seed/" + encodeURIComponent(name) + "/600/400";
+
+let initialArtists = [
+  { name:"Rosa Linn", img:seedImg("Rosa"), instrument:"Piano", address:"Armenia", email:"rosalinn@gmail.com", bio:"Indie pop singer", genre:"Indie" },
+  { name:"Arlo Parks", img:seedImg("Arlo"), instrument:"Vocals", address:"London", email:"arloparks@gmail.com", bio:"Poetic R&B artist", genre:"R&B" },
+  { name:"Ruth B.", img:seedImg("Ruth"), instrument:"Piano", address:"Canada", email:"ruthb@gmail.com", bio:"Soft pop singer", genre:"Pop" },
+  { name:"Keshi", img:seedImg("Keshi"), instrument:"Guitar", address:"USA", email:"keshi@gmail.com", bio:"Lo-fi & R&B", genre:"Lo-fi" },
+];
+
+const artistsLS = localStorage.getItem("artists_v5");
+let artists = artistsLS ? JSON.parse(artistsLS) : initialArtists;
+
+let votes = JSON.parse(localStorage.getItem("votes_v5")) || {};
+let comments = JSON.parse(localStorage.getItem("comments_v5")) || {};
+
+/* SAVE FUNCTION */
+function saveAll(){
+  localStorage.setItem("artists_v5", JSON.stringify(artists));
+  localStorage.setItem("votes_v5", JSON.stringify(votes));
+  localStorage.setItem("comments_v5", JSON.stringify(comments));
+}
+
+/* ========== DOM REFS ========== */
+const grid = document.getElementById("grid");
+const q = document.getElementById("q");
+const instrumentFilter = document.getElementById("instrumentFilter");
+const addressFilter = document.getElementById("addressFilter");
+const sortMode = document.getElementById("sortMode");
+const countShown = document.getElementById("countShown");
+
+/* ====== RENDER FUNCTION ====== */
+function render(){
+  let list = [...artists];
+
+  /* Search filter */
+  const s = q.value.toLowerCase();
+  if(s){
+    list = list.filter(a =>
+      a.name.toLowerCase().includes(s) ||
+      a.instrument.toLowerCase().includes(s) ||
+      a.address.toLowerCase().includes(s) ||
+      a.genre.toLowerCase().includes(s)
+    );
+  }
+
+  /* Instrument filter */
+  if(instrumentFilter.value){
+    list = list.filter(a => a.instrument.toLowerCase() === instrumentFilter.value.toLowerCase());
+  }
+
+  /* Address filter */
+  const loc = addressFilter.value.toLowerCase();
+  if(loc){
+    list = list.filter(a => a.address.toLowerCase().includes(loc));
+  }
+
+  /* Sort */
+  if(sortMode.value === "votes"){
+    list.sort((a,b) => (votes[b.name]||0) - (votes[a.name]||0));
+  }
+  if(sortMode.value === "name"){
+    list.sort((a,b)=> a.name.localeCompare(b.name));
+  }
+
+  countShown.textContent = list.length;
+  grid.innerHTML = "";
+
+  list.forEach(a=>{
+    votes[a.name] ??= 0;
+    comments[a.name] ??= [];
+
+    grid.innerHTML += `
+      <div class="card">
+
+        <img class="cover" src="${a.img}" alt="${a.name}">
+
+        <div class="name">${a.name}</div>
+
+        <div class="info"><b>Genre:</b> ${a.genre}</div>
+        <div class="info"><b>Instrument:</b> ${a.instrument}</div>
+        <div class="info"><b>Location:</b> ${a.address}</div>
+        <div class="info"><b>Bio:</b> ${a.bio}</div>
+
+        <div class="info"><b>Contact:</b> <a href="mailto:${a.email}">${a.email}</a></div>
+
+        <div class="voteWrap">
+          <button class="ghost" onclick="upvote('${a.name}')">▲</button>
+          <div><b>${votes[a.name]}</b></div>
+          <button class="ghost" onclick="downvote('${a.name}')">▼</button>
+        </div>
+
+      </div>
+    `;
+  });
+
+  saveAll();
+}
+
+/* ========== VOTING ========== */
+function upvote(name){
+  votes[name] = (votes[name]||0) + 1;
+  render();
+}
+function downvote(name){
+  votes[name] = Math.max((votes[name]||0) - 1, 0);
+  render();
+}
+
+/* ========== EVENTS ========== */
+q.oninput = render;
+instrumentFilter.onchange = render;
+addressFilter.oninput = render;
+sortMode.onchange = render;
+
+/* ========== THEME ========== */
+document.getElementById("toggleTheme").onclick = ()=>{
+  document.body.classList.toggle("dark");
+};
+
+/* ========== ADD ARTIST FORM ========== */
+document.getElementById("addOpen").onclick = ()=> addForm.style.display = "block";
+document.getElementById("addCancel").onclick = ()=> addForm.style.display = "none";
+document.getElementById("addSave").onclick = ()=>{
+
+  let obj = {
+    name: newName.value,
+    img: newImg.value || seedImg(newName.value),
+    audio: newAudio.value,
+    instrument: newInstrument.value || "Unknown",
+    address: newAddress.value,
+    email: newEmail.value,
+    bio: newBio.value,
+    genre: newGenre.value
+  };
+
+  artists.push(obj);
+  saveAll();
+  addForm.style.display = "none";
+  render();
+};
+
+/* ========== VOICE SEARCH ========== */
+document.getElementById("voiceSearchBtn").onclick = ()=>{
+  if(!window.SpeechRecognition && !window.webkitSpeechRecognition){
+    alert("Voice search not supported!");
+    return;
+  }
+  const R = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+  R.start();
+  R.onresult = e=>{
+    q.value = e.results[0][0].transcript;
+    render();
+  };
+};
+
+/* INITIAL RENDER */
+render();
+</script>
+
+</body>
+</html>
